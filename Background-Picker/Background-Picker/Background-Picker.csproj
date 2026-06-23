@@ -9,4 +9,28 @@
         <UseWPF>true</UseWPF>
     </PropertyGroup>
 
+    <ItemGroup>
+      <None Remove="Data\placeholder.png" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Azure.AI.OpenAI" Version="2.1.0" />
+      <PackageReference Include="CredentialManagement" Version="1.0.2" />
+      <PackageReference Include="Magick.NET-Q16-AnyCPU" Version="14.14.0" />
+      <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Resource Include="Data\placeholder.png" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Update="Data\ImageList.json">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Data\Images\1.png">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
 </Project>

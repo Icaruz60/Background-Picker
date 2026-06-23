@@ -1,5 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 18
+VisualStudioVersion = 18.7.11911.148 stable
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Background-Picker", "Background-Picker\Background-Picker.csproj", "{B2EC383A-2FC6-4917-9BA4-C3F39704D6F1}"
 EndProject
 Global
@@ -12,5 +15,11 @@ Global
 		{B2EC383A-2FC6-4917-9BA4-C3F39704D6F1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B2EC383A-2FC6-4917-9BA4-C3F39704D6F1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B2EC383A-2FC6-4917-9BA4-C3F39704D6F1}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {27110567-7AD2-4C8F-908E-1F0D23345111}
 	EndGlobalSection
 EndGlobal
