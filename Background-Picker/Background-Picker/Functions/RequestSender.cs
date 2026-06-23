@@ -140,16 +140,12 @@ public class RequestSender
         string img3 = json["Image3"].ToString();
 
         Image1.Background = new ImageBrush(new BitmapImage(new Uri(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data", "Images", $"{img1}.png"))));
+        Image1.Tag = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data", "Images", $"{img1}.png");
         Image2.Background = new ImageBrush(new BitmapImage(new Uri(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data", "Images", $"{img2}.png"))));
+        Image2.Tag = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data", "Images", $"{img2}.png");
         Image3.Background = new ImageBrush(new BitmapImage(new Uri(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data", "Images", $"{img3}.png"))));
-        //grey out send button!!
-        //make sure textbox is null or empty
+        Image3.Tag = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data", "Images", $"{img3}.png");
         //make sure images exist in the specified folder
 
-        // Send request to the specified URL with the provided data
-        //get back json with top 3 results {133,143,156}
-
-        //set 3 images to the top 3 results in the json
-        //un-grey out send button
     }
 }

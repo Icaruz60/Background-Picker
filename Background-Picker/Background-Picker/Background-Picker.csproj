@@ -21,7 +21,9 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Resource Include="Data\placeholder.png" />
+      <Content Include="Data\placeholder.png">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
     </ItemGroup>
 
     <ItemGroup>

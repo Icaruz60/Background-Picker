@@ -1,5 +1,8 @@
 ﻿using System.Diagnostics;
+using System.Drawing;
+using System.IO;
 using System.Windows;
+using System.Windows.Controls;
 using CredentialManagement;
 using Functions;
 using Microsoft.Win32;
@@ -9,10 +12,14 @@ public partial class MainWindow : Window
 {
     private readonly string SupportedExtension = ".png";
     private string _apiKey;
-
+    private string _bgImagePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyPictures),"MeetingBackground");
     public MainWindow()
     {
         InitializeComponent();
+
+        CreateBackgroundDirectory();
+
+        setImagePath();
 
         var cred = new Credential { Target = "Background-Picker/OpenAI" };
         bool exists = cred.Load();
@@ -45,6 +52,17 @@ public partial class MainWindow : Window
         apiBox.Focus();
     }
 
+    private void setFolder_OnClick(object sender, RoutedEventArgs e)
+    {
+        var dialog = new OpenFolderDialog();
+        dialog.InitialDirectory = _bgImagePath;
+        if (dialog.ShowDialog() == true)
+        {
+            _bgImagePath = dialog.FolderName;
+        }
+        setImagePath(_bgImagePath);
+        CreateBackgroundDirectory();
+    }
 
     private async void SendBtn_OnClick(object sender, RoutedEventArgs e)
     {
@@ -116,5 +134,57 @@ public partial class MainWindow : Window
     private void InputBox_TextChanged(object sender, RoutedEventArgs e)
     {
 
+    }
+
+    private void Image1Btn_OnClick(object sender, RoutedEventArgs e)
+    {
+        string from = (string)((Button)sender).Tag;
+        string to = Path.Combine(_bgImagePath, "bg.png");
+        ChangeBackground(from, to);
+    }
+
+    private void Image2Btn_OnClick(object sender, RoutedEventArgs e)
+    {
+        string from = (string)((Button)sender).Tag;
+        string to = Path.Combine(_bgImagePath, "bg.png");
+        ChangeBackground(from, to);
+    }
+
+    private void Image3Btn_OnClick(object sender, RoutedEventArgs e)
+    {
+        string from = (string)((Button)sender).Tag;
+        string to = Path.Combine(_bgImagePath, "bg.png");
+        ChangeBackground(from, to);
+    }
+
+    internal void ChangeBackground(string from, string to)
+    {
+        System.IO.File.Copy(from, to, true);
+    }
+
+    internal void CreateBackgroundDirectory()
+    {
+        Directory.CreateDirectory(_bgImagePath);
+
+        if (!File.Exists(Path.Combine(_bgImagePath, "bg.png")))
+        {
+            File.Copy(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data" , "Images", "108.png"), Path.Combine(_bgImagePath, "bg.png"));
+        }
+    }
+
+    internal void setImagePath(string path = null)
+    {
+        if (path != null)
+        {
+            _bgImagePath = path;
+        }
+        else
+        {
+            var pathCred = new Credential { Target = "Background-Picker/BGPath" };
+            _bgImagePath = pathCred.Load() ? pathCred.Password : _bgImagePath;
+        }
+
+        var saveCred = new Credential { Target = "Background-Picker/BGPath", Password = _bgImagePath };
+        saveCred.Save();
     }
 }
