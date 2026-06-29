@@ -168,7 +168,7 @@ public partial class MainWindow : Window
         ChangeBackground(from, to);
     }
 
-    internal void ChangeBackground(string from, string to)
+    private void ChangeBackground(string from, string to)
     {
         if(!string.IsNullOrWhiteSpace(from) && !string.IsNullOrWhiteSpace(to))
         {
@@ -176,7 +176,7 @@ public partial class MainWindow : Window
         }
     }
 
-    internal void CreateBackgroundDirectory()
+    private void CreateBackgroundDirectory()
     {
         Directory.CreateDirectory(_bgImagePath);
 
@@ -186,7 +186,7 @@ public partial class MainWindow : Window
         }
     }
 
-    internal void SetImagePath(string path = null)
+    private void SetImagePath(string path = null)
     {
         if (path != null)
         {
