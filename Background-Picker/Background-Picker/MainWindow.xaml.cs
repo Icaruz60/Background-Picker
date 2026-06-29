@@ -1,11 +1,12 @@
 ﻿using System.Diagnostics;
-using System.Drawing;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using CredentialManagement;
 using Functions;
+using Helpers;
 using Microsoft.Win32;
+
 namespace Background_Picker;
 
 public partial class MainWindow : Window
@@ -19,19 +20,11 @@ public partial class MainWindow : Window
 
         CreateBackgroundDirectory();
 
-        setImagePath();
+        SetImagePath();
 
-        var cred = new Credential { Target = "Background-Picker/OpenAI" };
-        bool exists = cred.Load();
-        if(!exists)
-        {
-            apiPopup.IsOpen = true;
-            apiBox.Focus();
-        }
-        else
-        {
-            _apiKey = cred.Password;
-        }
+        DataIntegrity.SyncImageData();
+
+        LoadApiKey();
     }
 
     private void SubmitBtn_OnClick(object sender, RoutedEventArgs e)
@@ -42,17 +35,22 @@ public partial class MainWindow : Window
             var cred = new Credential { Target = "Background-Picker/OpenAI", Password = apiKey };
             cred.Save();
             _apiKey = cred.Password;
-            apiPopup.IsOpen = false;
+            apiOverlay.Visibility = Visibility.Collapsed;
         }
     }
 
-    private void setApiKey_OnClick(object sender, RoutedEventArgs e)
+    private void CloseApiOverlay_OnClick(object sender, RoutedEventArgs e)
     {
-        apiPopup.IsOpen = true;
+        apiOverlay.Visibility = Visibility.Collapsed;
+    }
+
+    private void SetApiKey_OnClick(object sender, RoutedEventArgs e)
+    {
+        apiOverlay.Visibility = Visibility.Visible;
         apiBox.Focus();
     }
 
-    private void setFolder_OnClick(object sender, RoutedEventArgs e)
+    private void SetFolder_OnClick(object sender, RoutedEventArgs e)
     {
         var dialog = new OpenFolderDialog();
         dialog.InitialDirectory = _bgImagePath;
@@ -60,7 +58,7 @@ public partial class MainWindow : Window
         {
             _bgImagePath = dialog.FolderName;
         }
-        setImagePath(_bgImagePath);
+        SetImagePath(_bgImagePath);
         CreateBackgroundDirectory();
     }
 
@@ -69,10 +67,21 @@ public partial class MainWindow : Window
         if (!string.IsNullOrWhiteSpace(InputBox.Text))
         {
             SendBtn.IsEnabled = false;
-            await RequestSender.SendRequestAsync(InputBox.Text, _apiKey, Image1Btn, Image2Btn, Image3Btn);
-            SendBtn.IsEnabled = true;
+            try
+            {
+                await ImageSearchService.SendRequestAsync(InputBox.Text, _apiKey, Image1Btn, Image2Btn, Image3Btn);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Something went wrong: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                SendBtn.IsEnabled = true;
+            }
         }
     }
+
     private async void UploadImageBtn_OnClick(object sender, RoutedEventArgs e)
     {
         OpenFileDialog ofd = new OpenFileDialog();
@@ -84,9 +93,19 @@ public partial class MainWindow : Window
         if (success == true)
         {
             string[] files = ofd.FileNames;
-            loadingPopup.IsOpen = true;
-            await PreprocessingPipeline.ProcessImagesAsync(files, _apiKey, loadingBar, percentageText);
-            loadingPopup.IsOpen = false;
+            loadingOverlay.Visibility = Visibility.Visible;
+            try
+            {
+                await PreprocessingPipeline.ProcessImagesAsync(files, _apiKey, loadingBar, percentageText);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Something went wrong: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                loadingOverlay.Visibility = Visibility.Collapsed;
+            }
         }
     }
 
@@ -96,7 +115,7 @@ public partial class MainWindow : Window
         {
             string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
             //To be convenient, only check first file for correct extension
-            if (files.Length > 0 && System.IO.Path.GetExtension(files[0]).ToLower() == SupportedExtension)
+            if (files.Length > 0 && Path.GetExtension(files[0]).ToLower() == SupportedExtension)
             {
                 e.Effects = DragDropEffects.Copy;
             }
@@ -119,7 +138,7 @@ public partial class MainWindow : Window
         for (int i = 0; i < files.Length; i++)
         {
             string filePath = files[i];
-            if (System.IO.Path.GetExtension(files[i]).ToLower() == SupportedExtension)
+            if (Path.GetExtension(files[i]).ToLower() == SupportedExtension)
             {
                 filterFiles.Add(filePath);
                 Debug.WriteLine("Taking in: " + filePath);
@@ -127,30 +146,22 @@ public partial class MainWindow : Window
 
         }
         string[] checkedFiles = filterFiles.ToArray();
-        loadingPopup.IsOpen = true;
-        await PreprocessingPipeline.ProcessImagesAsync(files, _apiKey, loadingBar, percentageText);
-        loadingPopup.IsOpen = false;
-    }
-    private void InputBox_TextChanged(object sender, RoutedEventArgs e)
-    {
-
-    }
-
-    private void Image1Btn_OnClick(object sender, RoutedEventArgs e)
-    {
-        string from = (string)((Button)sender).Tag;
-        string to = Path.Combine(_bgImagePath, "bg.png");
-        ChangeBackground(from, to);
-    }
-
-    private void Image2Btn_OnClick(object sender, RoutedEventArgs e)
-    {
-        string from = (string)((Button)sender).Tag;
-        string to = Path.Combine(_bgImagePath, "bg.png");
-        ChangeBackground(from, to);
+        loadingOverlay.Visibility = Visibility.Visible;
+        try
+        {
+            await PreprocessingPipeline.ProcessImagesAsync(checkedFiles, _apiKey, loadingBar, percentageText);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Something went wrong: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+        finally
+        {
+            loadingOverlay.Visibility = Visibility.Collapsed;
+        }
     }
 
-    private void Image3Btn_OnClick(object sender, RoutedEventArgs e)
+    private void ImageBtn_OnClick(object sender, RoutedEventArgs e)
     {
         string from = (string)((Button)sender).Tag;
         string to = Path.Combine(_bgImagePath, "bg.png");
@@ -159,7 +170,10 @@ public partial class MainWindow : Window
 
     internal void ChangeBackground(string from, string to)
     {
-        System.IO.File.Copy(from, to, true);
+        if(!string.IsNullOrWhiteSpace(from) && !string.IsNullOrWhiteSpace(to))
+        {
+            File.Copy(from, to, true);
+        }
     }
 
     internal void CreateBackgroundDirectory()
@@ -168,11 +182,11 @@ public partial class MainWindow : Window
 
         if (!File.Exists(Path.Combine(_bgImagePath, "bg.png")))
         {
-            File.Copy(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data" , "Images", "108.png"), Path.Combine(_bgImagePath, "bg.png"));
+            File.Copy(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data", "Images", "108.png"), Path.Combine(_bgImagePath, "bg.png"));
         }
     }
 
-    internal void setImagePath(string path = null)
+    internal void SetImagePath(string path = null)
     {
         if (path != null)
         {
@@ -186,5 +200,20 @@ public partial class MainWindow : Window
 
         var saveCred = new Credential { Target = "Background-Picker/BGPath", Password = _bgImagePath };
         saveCred.Save();
+    }
+
+    private void LoadApiKey()
+    {
+        var cred = new Credential { Target = "Background-Picker/OpenAI" };
+        bool exists = cred.Load();
+        if (!exists)
+        {
+            apiOverlay.Visibility = Visibility.Visible;
+            apiBox.Focus();
+        }
+        else
+        {
+            _apiKey = cred.Password;
+        }
     }
 }

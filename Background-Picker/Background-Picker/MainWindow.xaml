@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Background_Picker"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="Background Picker" Height="720" Width="1280">
     <Grid Background="#0D1117">
         <Grid.RowDefinitions>
             <RowDefinition Height="50"/>
@@ -15,32 +15,43 @@
             <RowDefinition Height="1.5*"/>
         </Grid.RowDefinitions>
 
-        <!-- Popups-->
-        <Popup Name="apiPopup" IsOpen="False" Height="150" Width="500">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="*"/>
-                </Grid.RowDefinitions>
-                <TextBlock Grid.Row="0" Text="Enter OpenAI API Key here (gets stored locally):" Width="400" Height="30" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="White"/>
-                <PasswordBox Grid.Row="1" Name="apiBox" Width="400" Height="30" VerticalAlignment="Center" HorizontalAlignment="Center"/>
-                <Button Grid.Row="2" Content="Submit" Width="200" Height="30" VerticalAlignment="Center" HorizontalAlignment="Center" Click="SubmitBtn_OnClick"/>
-            </Grid>
-        </Popup>
+        <!-- Overlays -->
+        <Grid Name="apiOverlay" Grid.RowSpan="5" Visibility="Collapsed" Background="#AA000000" Panel.ZIndex="10">
+            <Border Background="#1E2530" Width="460" Height="200" VerticalAlignment="Center" HorizontalAlignment="Center" CornerRadius="8">
+                <Grid Margin="24">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <Grid Grid.Row="0" Margin="0,0,0,12">
+                        <TextBlock Text="Set API Key" Foreground="White" FontSize="16" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        <Button Content="✕" HorizontalAlignment="Right" Width="24" Height="24"
+                                Foreground="Red" Background="Transparent" BorderThickness="0"
+                                FontWeight="Bold" Click="CloseApiOverlay_OnClick"/>
+                    </Grid>
+                    <TextBlock Grid.Row="1" Text="Enter your OpenAI API Key (stored locally):" Foreground="#AAAAAA" VerticalAlignment="Center" Margin="0,0,0,8"/>
+                    <PasswordBox Grid.Row="2" Name="apiBox" Height="32" Margin="0,0,0,16"/>
+                    <Button Grid.Row="3" Content="Submit" Height="32" HorizontalAlignment="Right" Width="120" Click="SubmitBtn_OnClick"/>
+                </Grid>
+            </Border>
+        </Grid>
 
-        <Popup Name="loadingPopup" IsOpen="False" Height="150" Width="500">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="*"/>
-                </Grid.RowDefinitions>
-                <TextBlock Grid.Row="0" Text="Preprocessing Images..." Width="400" Height="30" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="White"/>
-                <TextBlock Grid.Row="1" Name="percentageText" Text="1% Done | (0/x)" Width="400" Height="30" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="White"/>
-                <ProgressBar Grid.Row="2" Name="loadingBar" Minimum="0" Maximum="100" Value="1" Width="400" Height="30" VerticalAlignment="Center" HorizontalAlignment="Center"/>
-            </Grid>
-        </Popup>
+        <Grid Name="loadingOverlay" Grid.RowSpan="5" Visibility="Collapsed" Background="#AA000000" Panel.ZIndex="10">
+            <Border Background="#1E2530" Width="460" Height="160" VerticalAlignment="Center" HorizontalAlignment="Center" CornerRadius="8">
+                <Grid Margin="24">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Grid.Row="0" Text="Preprocessing Images..." Foreground="White" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,12"/>
+                    <TextBlock Grid.Row="1" Name="percentageText" Text="0% Done | (0/0)" Foreground="#AAAAAA" Margin="0,0,0,12"/>
+                    <ProgressBar Grid.Row="2" Name="loadingBar" Minimum="0" Maximum="100" Value="0" Height="12"/>
+                </Grid>
+            </Border>
+        </Grid>
 
         <!-- Menu Bar -->
         <Grid Grid.Row="0">
@@ -49,9 +60,9 @@
                 <ColumnDefinition Width="0.6*"/>
                 <ColumnDefinition Width="0.2*"/>
             </Grid.ColumnDefinitions>
-            <Button Content="set API Key" Name="setApiKey" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center" Height="40" Width="70" Click="setApiKey_OnClick"/>
+            <Button Content="set API Key" Name="setApiKey" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center" Height="40" Width="70" Click="SetApiKey_OnClick"/>
             <TextBlock Grid.Column="1"  HorizontalAlignment="Center" TextWrapping="Wrap" Text="Background Picker" VerticalAlignment="Center" FontSize="32" Foreground="White"/>
-            <Button Content="set Folder" Name="setFolder" Grid.Column="2" HorizontalAlignment="Center" VerticalAlignment="Center" Height="40" Width="70" Click="setFolder_OnClick"/>
+            <Button Content="set Folder" Name="setFolder" Grid.Column="2" HorizontalAlignment="Center" VerticalAlignment="Center" Height="40" Width="70" Click="SetFolder_OnClick"/>
         </Grid>
 
         <Rectangle Name="Seperator1" Grid.Row="1" Fill="White"/>
@@ -63,19 +74,19 @@
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
-            <Button Name="Image1Btn" Tag=""  Grid.Column="0" HorizontalAlignment="Stretch" VerticalAlignment= "Stretch" Margin="30, 30, 30, 30" Click="Image1Btn_OnClick">
+            <Button Name="Image1Btn" Tag=""  Grid.Column="0" HorizontalAlignment="Stretch" VerticalAlignment= "Stretch" Margin="30, 30, 30, 30" Click="ImageBtn_OnClick">
                 <Button.Background>
                     <ImageBrush ImageSource="/Data/placeholder.png" Stretch="UniformToFill"/>
                 </Button.Background>
             </Button>
 
-            <Button Name="Image2Btn" Tag="" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment= "Stretch" Margin="30, 30, 30, 30" Click="Image2Btn_OnClick">
+            <Button Name="Image2Btn" Tag="" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment= "Stretch" Margin="30, 30, 30, 30" Click="ImageBtn_OnClick">
                 <Button.Background>
                     <ImageBrush ImageSource="/Data/placeholder.png" Stretch="UniformToFill"/>
                 </Button.Background>
             </Button>
 
-            <Button Name="Image3Btn" Tag="" Grid.Column="2" HorizontalAlignment="Stretch" VerticalAlignment= "Stretch" Margin="30, 30, 30, 30" Click="Image3Btn_OnClick">
+            <Button Name="Image3Btn" Tag="" Grid.Column="2" HorizontalAlignment="Stretch" VerticalAlignment= "Stretch" Margin="30, 30, 30, 30" Click="ImageBtn_OnClick">
                 <Button.Background>
                     <ImageBrush ImageSource="/Data/placeholder.png" Stretch="UniformToFill"/>
                 </Button.Background>
@@ -91,9 +102,9 @@
                 <ColumnDefinition Width="0.6*"/>
                 <ColumnDefinition Width="0.2*"/>
             </Grid.ColumnDefinitions>
-            <Button Content="UploadImageBtn" Grid.Column="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="30,30,30,30" AllowDrop="True" DragOver="UploadImageBtn_OnDragOver" Drop="UploadImageBtn_OnDrop" Click="UploadImageBtn_OnClick"/>
-            <TextBox Name="InputBox" Grid.Column="1" TextWrapping="Wrap" Text="" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="30,30,30,30" TextChanged="InputBox_TextChanged"/>
-            <Button Name="SendBtn" Content="SendBtn" Grid.Column="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="30,30,30,30" Click="SendBtn_OnClick"/>
+            <Button Content="Upload New Images" Grid.Column="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="30,30,30,30" AllowDrop="True" DragOver="UploadImageBtn_OnDragOver" Drop="UploadImageBtn_OnDrop" Click="UploadImageBtn_OnClick"/>
+            <TextBox Name="InputBox" Grid.Column="1" TextWrapping="Wrap" Text="" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="30,30,30,30"/>
+            <Button Name="SendBtn" Content="Send Request" Grid.Column="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="30,30,30,30" Click="SendBtn_OnClick"/>
 
         </Grid>
     </Grid>
